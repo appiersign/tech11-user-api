@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence-unit name="myInMemoryPU" transaction-type="JTA">
+    <jta-data-source>jdbc/__default</jta-data-source>
+    <class>entity.User</class>
+    <properties>
+        <property name="hibernate.dialect" value="org.hibernate.dialect.H2Dialect"/>
+        <property name="jakarta.persistence.jdbc.driver" value="org.hsqldb.jdbcDriver"/>
+        <property name="jakarta.persistence.jdbc.url" value="jdbc:hsqldb:file:target/myDB;shutdown=true"/>
+        <!--        <property name="jakarta.persistence.jdbc.user" value="user" />-->
+        <!--        <property name="jakarta.persistence.jdbc.password" value="password" />-->
+        <property name="jakarta.persistence.schema-generation.database.action" value="drop-and-create"/>
+        <property name="jakarta.persistence.logging.level" value="FINE"/>
+        <!--        <property name="jakarta.persistence.schema-generation.database.action" value="drop-and-create"/>-->
+        <!--        <property name="jakarta.persistence.jdbc.url"-->
+        <!--                  value="jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1"/>-->
+    </properties>
+</persistence-unit>
