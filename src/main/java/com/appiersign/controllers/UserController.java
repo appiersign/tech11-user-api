@@ -1,9 +1,6 @@
 package com.appiersign.controllers;
 
-import com.appiersign.dtos.ResponseDTO;
-import com.appiersign.dtos.UpdateUserRequest;
-import com.appiersign.dtos.UserRequest;
-import com.appiersign.dtos.UserResource;
+import com.appiersign.dtos.*;
 import com.appiersign.entities.User;
 import com.appiersign.services.UserService;
 import com.appiersign.util.JsonResponse;
@@ -14,6 +11,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.slf4j.Logger;
 
+import java.util.List;
 import java.util.UUID;
 
 @Path("/users")
@@ -33,9 +31,14 @@ public class UserController {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getUsers() {
+    public PaginatedResource<User> getUsers(
+            @QueryParam("pageNumber") @DefaultValue("1") int pageNumber,
+            @QueryParam("pageSize") @DefaultValue("10") int pageSize
+    ) {
         log.info("Get users request received.");
-        return this.jsonResponse.ok(new ResponseDTO(true, "Users retrieved.", this.userService.getUsers()));
+        List<User> users = this.userService.getUsers(pageNumber, pageSize);
+        Long total = this.userService.getUsersCount();
+        return new PaginatedResource<>(users, total, pageSize, pageNumber);
     }
 
     @GET
@@ -46,7 +49,7 @@ public class UserController {
         User user = this.userService.getUser(uuid);
         return (user == null) ?
                 jsonResponse.notFound(new ResponseDTO(false, "User not found.", null)) :
-                jsonResponse.ok(new ResponseDTO(true, "User retrieved.", userResource.create(user)));
+                jsonResponse.ok(new ResponseDTO(true, "User retrieved.", user));
     }
 
     @POST
@@ -56,7 +59,7 @@ public class UserController {
         log.info("Create user request received.");
         User user = this.userService.createUser(userRequest);
         return jsonResponse.created(
-                new ResponseDTO(true, "User created.", userResource.create(user))
+                new ResponseDTO(true, "User created.", user)
         );
     }
 

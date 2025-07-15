@@ -10,14 +10,13 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
 import jakarta.transaction.Transactional;
 
 import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class UserService {
@@ -34,9 +33,16 @@ public class UserService {
     @PersistenceContext(unitName = "myInMemoryPU")
     private EntityManager entityManager;
 
-    public List<Map<String, String>> getUsers() {
-        List<User> users = entityManager.createQuery("SELECT u FROM User u", User.class).getResultList();
-        return users.stream().map(user -> userResource.create(user)).collect(Collectors.toList());
+    public List<User> getUsers(int pageNumber, int pageSize) {
+        TypedQuery<User> query = entityManager.createQuery("SELECT u FROM User u ORDER BY u.firstName", User.class);
+        query.setFirstResult((pageNumber - 1) * pageSize);
+        query.setMaxResults(pageSize);
+        return query.getResultList();
+    }
+
+    public Long getUsersCount() {
+        TypedQuery<Long> query = entityManager.createQuery("SELECT COUNT(u) FROM User u", Long.class);
+        return query.getSingleResult();
     }
 
     @Transactional
@@ -55,8 +61,7 @@ public class UserService {
 
     public User getUser(UUID uuid) {
         return entityManager.createQuery("SELECT u FROM User u WHERE u.uuid = :uuid", User.class)
-                .setParameter("uuid", uuid)
-                .getResultList().stream().findFirst().orElse(null);
+                .setParameter("uuid", uuid).getSingleResult();
     }
 
     @Transactional
